@@ -71,11 +71,10 @@ class ScreenCapture:
     try:
       timestamp = int(time.time() * 1e9)  # Convert seconds to nanoseconds
       event_info = f"{timestamp}: Key pressed: {key.char}\n"
+      print(event_info)
+      self._log_event(event_info)
     except AttributeError:
-      timestamp = int(time.time() * 1e9)  # Convert seconds to nanoseconds
-      event_info = f"{timestamp}: Special key {key} pressed\n"
-    print(event_info)
-    self._log_event(event_info)
+      pass  # Ignore special keys
 
   def _on_key_release(self, key):
     timestamp = int(time.time() * 1e9)  # Convert seconds to nanoseconds
