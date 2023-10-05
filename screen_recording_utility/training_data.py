@@ -5,7 +5,7 @@ import pyautogui
 from pynput import mouse, keyboard
 
 class ScreenCapture:
-  def __init__(self, interval=1):
+  def __init__(self, interval=0.02):  # Set interval to 0.02 for 20 milliseconds
     self.interval = interval
     self.base_dir = "screen_shots"
 
@@ -44,7 +44,7 @@ class ScreenCapture:
 
   def _take_screenshots(self):
     while True:
-      screenshot_path = os.path.join(self.folder_path, f"screenshot_{int(time.time())}.png")
+      screenshot_path = os.path.join(self.folder_path, f"screenshot_{int(time.time() * 1e3)}.png")  # Added millisecond timestamp
       screenshot = pyautogui.screenshot()
       screenshot.save(screenshot_path)
 
@@ -111,6 +111,3 @@ if __name__ == "__main__":
     capture.mouse_listener.stop()
     capture.keyboard_listener.stop()
     capture.screenshot_thread.join()
-
-
-
