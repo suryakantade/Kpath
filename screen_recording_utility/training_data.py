@@ -28,13 +28,19 @@ class ScreenCapture:
     # Lock for synchronization
     self.lock = threading.Lock()
 
-    self.screenshot_thread = threading.Thread(target=self._take_screenshots, daemon=True)
+    # Mouse listener
     self.mouse_listener = mouse.Listener(on_click=self._on_click, on_scroll=self._on_scroll)
+
+    # Keyboard listener
     self.keyboard_listener = keyboard.Listener(on_press=self._on_key_press, on_release=self._on_key_release)
 
-    self.screenshot_thread.start()
+    # Start both listeners
     self.mouse_listener.start()
     self.keyboard_listener.start()
+
+    # Start the screenshot thread
+    self.screenshot_thread = threading.Thread(target=self._take_screenshots, daemon=True)
+    self.screenshot_thread.start()
 
   def _take_screenshots(self):
     while True:
@@ -97,9 +103,14 @@ if __name__ == "__main__":
   capture = ScreenCapture()
 
   try:
-    capture.screenshot_thread.join()
+    # The screenshot_thread is a daemon thread and will automatically terminate when the main program exits
+    while True:
+      time.sleep(1)
   except KeyboardInterrupt:
     print("Stopping the screen capture utility...")
     capture.mouse_listener.stop()
     capture.keyboard_listener.stop()
     capture.screenshot_thread.join()
+
+
+
