@@ -40,25 +40,30 @@ class ScreenCapture:
 
   def _on_click(self, x, y, button, pressed):
     action = "Pressed" if pressed else "Released"
-    event_info = f"Mouse {action} at ({x}, {y}) with {button}\n"
+    timestamp = int(time.time() * 1e9)  # Convert seconds to nanoseconds
+    event_info = f"{timestamp}: Mouse {action} at ({x}, {y}) with {button}\n"
     print(event_info)
     self._log_event(event_info)
 
   def _on_scroll(self, x, y, dx, dy):
-    event_info = f"Scrolled at ({x}, {y}) with delta ({dx}, {dy})\n"
+    timestamp = int(time.time() * 1e9)  # Convert seconds to nanoseconds
+    event_info = f"{timestamp}: Scrolled at ({x}, {y}) with delta ({dx}, {dy})\n"
     print(event_info)
     self._log_event(event_info)
 
   def _on_key_press(self, key):
     try:
-      event_info = f"Key pressed: {key.char}\n"
+      timestamp = int(time.time() * 1e9)  # Convert seconds to nanoseconds
+      event_info = f"{timestamp}: Key pressed: {key.char}\n"
     except AttributeError:
-      event_info = f"Special key {key} pressed\n"
+      timestamp = int(time.time() * 1e9)  # Convert seconds to nanoseconds
+      event_info = f"{timestamp}: Special key {key} pressed\n"
     print(event_info)
     self._log_event(event_info)
 
   def _on_key_release(self, key):
-    event_info = f"Key released: {key}\n"
+    timestamp = int(time.time() * 1e9)  # Convert seconds to nanoseconds
+    event_info = f"{timestamp}: Key released: {key}\n"
     print(event_info)
     self._log_event(event_info)
 
