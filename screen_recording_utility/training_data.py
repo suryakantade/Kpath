@@ -17,8 +17,13 @@ class ScreenCapture:
     self.folder_path = os.path.join(self.base_dir, time.strftime("%Y%m%d%H%M%S"))
     os.makedirs(self.folder_path)
 
+    # Initialize the event log file
+    self.log_file_path = os.path.join(self.folder_path, "events_log.txt")
+    with open(self.log_file_path, "w") as log_file:
+      log_file.write("Event Log:\n\n")
+
     self.screenshot_thread = threading.Thread(target=self._take_screenshots, daemon=True)
-    self.mouse_listener = mouse.Listener(on_click=self._on_click)
+    self.mouse_listener = mouse.Listener(on_click=self._on_click, on_scroll=self._on_scroll)
     self.keyboard_listener = keyboard.Listener(on_press=self._on_key_press, on_release=self._on_key_release)
 
     self.screenshot_thread.start()
@@ -35,16 +40,31 @@ class ScreenCapture:
 
   def _on_click(self, x, y, button, pressed):
     action = "Pressed" if pressed else "Released"
-    print(f"Mouse {action} at ({x}, {y}) with {button}")
+    event_info = f"Mouse {action} at ({x}, {y}) with {button}\n"
+    print(event_info)
+    self._log_event(event_info)
+
+  def _on_scroll(self, x, y, dx, dy):
+    event_info = f"Scrolled at ({x}, {y}) with delta ({dx}, {dy})\n"
+    print(event_info)
+    self._log_event(event_info)
 
   def _on_key_press(self, key):
     try:
-      print(f"Key pressed: {key.char}")
+      event_info = f"Key pressed: {key.char}\n"
     except AttributeError:
-      print(f"Special key {key} pressed")
+      event_info = f"Special key {key} pressed\n"
+    print(event_info)
+    self._log_event(event_info)
 
   def _on_key_release(self, key):
-    print(f"Key released: {key}")
+    event_info = f"Key released: {key}\n"
+    print(event_info)
+    self._log_event(event_info)
+
+  def _log_event(self, event_info):
+    with open(self.log_file_path, "a") as log_file:
+      log_file.write(event_info)
 
 if __name__ == "__main__":
   capture = ScreenCapture()
