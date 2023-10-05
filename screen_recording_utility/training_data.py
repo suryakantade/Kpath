@@ -22,6 +22,9 @@ class ScreenCapture:
     with open(self.log_file_path, "w") as log_file:
       log_file.write("Event Log:\n\n")
 
+    # Click counter for detecting double clicks
+    self.click_counter = 0
+
     self.screenshot_thread = threading.Thread(target=self._take_screenshots, daemon=True)
     self.mouse_listener = mouse.Listener(on_click=self._on_click, on_scroll=self._on_scroll)
     self.keyboard_listener = keyboard.Listener(on_press=self._on_key_press, on_release=self._on_key_release)
@@ -39,11 +42,24 @@ class ScreenCapture:
       time.sleep(self.interval)
 
   def _on_click(self, x, y, button, pressed):
-    action = "Pressed" if pressed else "Released"
-    timestamp = int(time.time() * 1e9)  # Convert seconds to nanoseconds
-    event_info = f"{timestamp}: Mouse {action} at ({x}, {y}) with {button}\n"
-    print(event_info)
-    self._log_event(event_info)
+    if pressed:
+      self.click_counter += 1
+      timestamp = int(time.time() * 1e9)  # Convert seconds to nanoseconds
+      event_info = f"{timestamp}: Mouse Pressed at ({x}, {y}) with {button}\n"
+      print(event_info)
+      self._log_event(event_info)
+
+      # Check for double-click
+      if self.click_counter == 2:
+        event_info = f"{timestamp}: Mouse Double-Clicked at ({x}, {y}) with {button}\n"
+        print(event_info)
+        self._log_event(event_info)
+        self.click_counter = 0
+    else:
+      timestamp = int(time.time() * 1e9)  # Convert seconds to nanoseconds
+      event_info = f"{timestamp}: Mouse Released at ({x}, {y}) with {button}\n"
+      print(event_info)
+      self._log_event(event_info)
 
   def _on_scroll(self, x, y, dx, dy):
     timestamp = int(time.time() * 1e9)  # Convert seconds to nanoseconds
