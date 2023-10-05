@@ -25,6 +25,9 @@ class ScreenCapture:
     # Click counter for detecting double clicks
     self.click_counter = 0
 
+    # Lock for synchronization
+    self.lock = threading.Lock()
+
     self.screenshot_thread = threading.Thread(target=self._take_screenshots, daemon=True)
     self.mouse_listener = mouse.Listener(on_click=self._on_click, on_scroll=self._on_scroll)
     self.keyboard_listener = keyboard.Listener(on_press=self._on_key_press, on_release=self._on_key_release)
@@ -42,45 +45,49 @@ class ScreenCapture:
       time.sleep(self.interval)
 
   def _on_click(self, x, y, button, pressed):
-    if pressed:
-      self.click_counter += 1
-      timestamp = int(time.time() * 1e9)  # Convert seconds to nanoseconds
-      event_info = f"{timestamp}: Mouse Pressed at ({x}, {y}) with {button}\n"
-      print(event_info)
-      self._log_event(event_info)
-
-      # Check for double-click
-      if self.click_counter == 2:
-        event_info = f"{timestamp}: Mouse Double-Clicked at ({x}, {y}) with {button}\n"
+    with self.lock:
+      if pressed:
+        self.click_counter += 1
+        timestamp = int(time.time() * 1e9)  # Convert seconds to nanoseconds
+        event_info = f"{timestamp}: Mouse Pressed at ({x}, {y}) with {button}\n"
         print(event_info)
         self._log_event(event_info)
-        self.click_counter = 0
-    else:
-      timestamp = int(time.time() * 1e9)  # Convert seconds to nanoseconds
-      event_info = f"{timestamp}: Mouse Released at ({x}, {y}) with {button}\n"
-      print(event_info)
-      self._log_event(event_info)
+
+        # Check for double-click
+        if self.click_counter == 2:
+          event_info = f"{timestamp}: Mouse Double-Clicked at ({x}, {y}) with {button}\n"
+          print(event_info)
+          self._log_event(event_info)
+          self.click_counter = 0
+      else:
+        timestamp = int(time.time() * 1e9)  # Convert seconds to nanoseconds
+        event_info = f"{timestamp}: Mouse Released at ({x}, {y}) with {button}\n"
+        print(event_info)
+        self._log_event(event_info)
 
   def _on_scroll(self, x, y, dx, dy):
-    timestamp = int(time.time() * 1e9)  # Convert seconds to nanoseconds
-    event_info = f"{timestamp}: Scrolled at ({x}, {y}) with delta ({dx}, {dy})\n"
-    print(event_info)
-    self._log_event(event_info)
-
-  def _on_key_press(self, key):
-    try:
+    with self.lock:
       timestamp = int(time.time() * 1e9)  # Convert seconds to nanoseconds
-      event_info = f"{timestamp}: Key pressed: {key.char}\n"
+      event_info = f"{timestamp}: Scrolled at ({x}, {y}) with delta ({dx}, {dy})\n"
       print(event_info)
       self._log_event(event_info)
-    except AttributeError:
-      pass  # Ignore special keys
+
+  def _on_key_press(self, key):
+    with self.lock:
+      try:
+        timestamp = int(time.time() * 1e9)  # Convert seconds to nanoseconds
+        event_info = f"{timestamp}: Key pressed: {key.char}\n"
+        print(event_info)
+        self._log_event(event_info)
+      except AttributeError:
+        pass  # Ignore special keys
 
   def _on_key_release(self, key):
-    timestamp = int(time.time() * 1e9)  # Convert seconds to nanoseconds
-    event_info = f"{timestamp}: Key released: {key}\n"
-    print(event_info)
-    self._log_event(event_info)
+    with self.lock:
+      timestamp = int(time.time() * 1e9)  # Convert seconds to nanoseconds
+      event_info = f"{timestamp}: Key released: {key}\n"
+      print(event_info)
+      self._log_event(event_info)
 
   def _log_event(self, event_info):
     with open(self.log_file_path, "a") as log_file:
