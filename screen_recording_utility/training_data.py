@@ -1,7 +1,7 @@
 import os
 import time
 import threading
-import pyautogui
+from mss import mss
 from pynput import mouse, keyboard
 
 class ScreenCapture:
@@ -43,12 +43,11 @@ class ScreenCapture:
     self.screenshot_thread.start()
 
   def _take_screenshots(self):
-    while True:
-      screenshot_path = os.path.join(self.folder_path, f"screenshot_{int(time.time() * 1e3)}.png")  # Added millisecond timestamp
-      screenshot = pyautogui.screenshot()
-      screenshot.save(screenshot_path)
-
-      time.sleep(self.interval)
+    with mss() as sct:
+      while True:
+        screenshot_path = os.path.join(self.folder_path, f"screenshot_{int(time.time() * 1e3)}.png")  # Added millisecond timestamp
+        sct.shot(output=screenshot_path)
+        time.sleep(self.interval)
 
   def _on_click(self, x, y, button, pressed):
     with self.lock:
