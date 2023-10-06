@@ -47,7 +47,7 @@ class ScreenCapture:
       while True:
         screenshot_path = os.path.join(self.folder_path, f"screenshot_{int(time.time() * 1e3)}.png")  # Added millisecond timestamp
         sct.shot(output=screenshot_path)
-        time.sleep(self.interval)
+        time.sleep(0.001)  # Change the interval to 10 milliseconds
 
   def _on_click(self, x, y, button, pressed):
     with self.lock:
@@ -76,7 +76,6 @@ class ScreenCapture:
       event_info = f"{timestamp}: Scrolled at ({x}, {y}) with delta ({dx}, {dy})\n"
       print(event_info)
       self._log_event(event_info)
-
   def _on_key_press(self, key):
     with self.lock:
       try:
